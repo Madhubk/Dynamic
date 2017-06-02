@@ -96,3 +96,403 @@
 
 }
 
+
+Main view view Page:
+
+   <div class="row" id="plusdata">
+
+            @Html.Partial("_DynamicBooking", Model)
+            </div>
+            
+Main View:(Jquery)
+
+  $(document).on('click', '#AddMoreHoPhone', function () {
+            debugger
+            //var form = $("#Bookingofflineform").removeData("validator").removeData("unobtrusiveValidation");  /* added by the jquery unobtrusive plugin */
+            //$.validator.unobtrusive.parse(form);
+            
+
+            var data = JSON.stringify({ GDSHoPhoneobj: $("#Bookingofflineform").serialize() });
+            $.ajax({
+                url: "@Url.Action("GDSAddHoPhone", "Booking")",               
+                type: 'POST',
+                // contentType: "application/json;charset=utf-8",
+                data: data,     
+                success: function (data) {                    
+                    $("#plusdata").html('');
+                    $("#plusdata").html(data);
+
+                    $('.multiselect').multiselect({
+                        includeSelectAllOption: true
+                    });
+
+
+                    $('.ddlCompletetext').autocomplete({
+
+                        source: function (request, response) {
+                            debugger
+                            $.ajax({
+                                type: "POST",
+                                url: '@Url.Action("SearchSupplier", "Home")',
+                                dataType: "json",
+                                data: { term: request.term },
+                                error: function (xhr, textStatus, errorThrown) {
+                                    alert('Error: ' + xhr.responseText);
+                                },
+                                success: function (data) {
+                                    response($.map(data, function (item) {
+                                        return {
+                                            label: item.Text,
+                                            value: item.Value
+                                        }
+                                    }));
+                                }
+                            });
+                        },
+                        minLength: 1,
+                        select: function (event, ui) {
+                            $('.ddlCompletetext').val(ui.item.label);
+                            $('.ddlCompletetext').val(ui.item.value);
+                            return false;
+                        },
+                    });
+
+                    $('.ddlcurrencyCompletetext').autocomplete({
+
+                        source: function (request, response) {
+                            debugger
+                            $.ajax({
+                                type: "POST",
+                                url: '@Url.Action("SearchCurrency", "Home")',
+                                dataType: "json",
+                                data: { term: request.term },
+                                error: function (xhr, textStatus, errorThrown) {
+                                    alert('Error: ' + xhr.responseText);
+                                },
+                                success: function (data) {
+                                    response($.map(data, function (item) {
+                                        return {
+                                            label: item.Text,
+                                            value: item.Value
+                                        }
+                                    }));
+                                }
+                            });
+                        },
+                        minLength: 1,
+                        select: function (event, ui) {
+                            $('.ddlcurrencyCompletetext').val(ui.item.label);
+                            $('.ddlcurrencyCompletetext').val(ui.item.value);
+                            return false;
+                        },
+                    });
+
+
+
+
+                }
+            })
+            event.preventDefault();
+        });
+
+
+        $(document).on('click', '#RemoveHoPhone', function () {
+            debugger
+           
+           var data = JSON.stringify({ GDSHoPhoneobj: $("#Bookingofflineform").serialize() });
+            $.ajax({                
+                url: "@Url.Action("GDSRemoveHoPhone", "Booking")",
+                type: "POST",
+                data:data,       
+                success: function (data) {
+                    $('#plusdata').html("");
+                    $('#plusdata').html(data);
+
+                    $('.multiselect').multiselect({
+                        includeSelectAllOption: true
+                    });
+                    //waitingDialog.hide();
+                }
+            });
+            //$.post("Booking/Test", {}).then(function (data) {
+
+            //})
+        });
+        
+        
+        Controller:
+           public ActionResult Index()
+        {
+            offlineBookingviewModel obj = new offlineBookingviewModel();
+            obj.lstofflineBookingviewModelplus.Add(new offlineBookingviewModelplus() { });
+            return View(obj);
+        }
+
+        [ValidateInput(false)]
+        public ActionResult GDSAddHoPhone(offlineBookingviewModel GDSHoPhoneobj)
+        {
+            GDSHoPhoneobj.lstofflineBookingviewModelplus.Add(new offlineBookingviewModelplus() { });
+            return PartialView("_DynamicBooking", GDSHoPhoneobj);
+        }
+
+        [ValidateInput(false)]
+        public ActionResult GDSRemoveHoPhone(offlineBookingviewModel GDSHoPhoneobj)
+        {
+            //GDSHoPhoneobj.lstofflineBookingviewModelplus.Add(new offlineBookingviewModelplus() { });
+
+            GDSHoPhoneobj.lstofflineBookingviewModelplus.RemoveAt(GDSHoPhoneobj.lstofflineBookingviewModelplus.Count - 1);
+            //GDSHoPhoneobj.GDS_Ho_AffiliationInfo.GDS_Ho_Phone.RemoveAt(GDSHoPhoneobj.GDS_Ho_AffiliationInfo.GDS_Ho_Phone.Count - 1);
+
+            return PartialView("_DynamicBooking", GDSHoPhoneobj);
+        }
+        
+         public ActionResult InsertBooking(offlineBookingviewModel obj)
+        {
+            string strInfo = "";
+            string ite = "";
+            offlineBookingviewModel m = new offlineBookingviewModel();
+
+
+            m.SupplierInfo = string.Join("|", obj.lstofflineBookingviewModelplus.Select(x => x.suppliername + "~" + string.Join("#", x.Selected.Select(x1 => x1).ToList()) + "~" + x.description + "~" + x.currency + "~" + x.ROE + "~" + x.Amount)) + "|";
+            try
+            {
+                string strError = "";
+
+
+                ErrorLog.Write("Before DBInsert ");
+
+                m.Name = obj.Name;
+                m.BookingId = "";
+                m.Emailid = obj.Emailid;
+                m.Mobileno = obj.Mobileno;
+                m.Packagetype = obj.Packagetype;
+                m.Adult = obj.Adult;
+                m.childwithbed = obj.childwithbed;
+                m.childwithoutbed = obj.childwithoutbed;
+                //m.TourCostPerPax = obj.TourCostPerPax;
+                m.Flight = obj.Flight;
+                m.Hotel = obj.Hotel;
+                m.Tours = obj.Tours;
+                m.Visa = obj.Visa;
+                m.HTT = obj.HTT;
+                m.Totalcost = obj.Totalcost;
+                m.UserId = 1;
+                m.startdate = obj.startdate;
+                m.MarkupFlightCost = obj.MarkupFlightCost;
+                m.MarkupHotelCost = obj.MarkupHotelCost;
+                m.MarkupTourCost = obj.MarkupTourCost;
+                m.MarkupVisaCost = obj.MarkupVisaCost;
+                m.MarkupHTTCost = obj.MarkupHTTCost;
+                m.MarkupTotalAmount = obj.MarkupTotalAmount;
+                m.SelFlightCost = obj.SelFlightCost;
+                m.SelHotelCost = obj.SelHotelCost;
+                m.SelTourCost = obj.SelTourCost;
+                m.SelVisaCost = obj.SelVisaCost;
+                m.SelHTTCost = obj.SelHTTCost;
+                m.SelTotalAmount = obj.SelTotalAmount;
+
+
+
+                strInfo = "'" + m.BookingId + "','" + m.Name + "','" + m.Emailid + "'" + "," + m.Mobileno + "," + m.Packagetype + "," +
+                   "'" + m.startdate + "'" + "," + m.Adult + "," + m.childwithbed + "," + m.childwithoutbed + "," + m.Flight + "," + m.Hotel + "," +
+                   m.Tours + "," + m.Visa + "," + m.HTT + "," + m.Totalcost + "," + m.MarkupFlightCost + "," + m.MarkupHotelCost + "," + m.MarkupTourCost + "," + m.MarkupVisaCost + "," +
+                   m.MarkupHTTCost + "," + m.MarkupTotalAmount + "," + m.SelFlightCost + "," + m.SelHotelCost + "," + m.SelTourCost + "," + m.SelVisaCost + "," + m.SelHTTCost + "," + m.SelTotalAmount + "," + m.UserId + "," + "'" + m.SupplierInfo + "'";
+                DataSet ds = DLayer.Qry_WithDataset("ADM_INS_OfflineBookingDetails " + strInfo, ref strError);
+                ErrorLog.Write("After DBInsert " + strInfo);
+                ModelState.Clear();
+                ds.Dispose();
+            }
+                
+
+
+            catch (Exception ex)
+            {
+                TempData["AlertMessage"] = "Oops Some Error Occured";
+                ErrorLog.Write(ex.Message + "," + strInfo, "BookingController", "InsertBooking");
+            }
+
+            TempData["AlertMessage"] = "Successfully Inserted";
+            return RedirectToAction("Offlinebooking", "Booking");
+
+        }
+
+        public ActionResult EditBooking(string BookingId)
+        {
+            offlineBookingviewModel m = new offlineBookingviewModel();
+            try
+            {
+                string strError = "";
+                string strInfo = "";
+
+                strInfo = "'" + BookingId + "'";
+
+                DataSet ds = DLayer.Qry_WithDataset("ADM_GET_OfflineBookingDetails " + strInfo, ref strError);
+                m.BookingId = ds.Tables[0].Rows[0]["BookingId"].ToString();
+                m.Name = ds.Tables[0].Rows[0]["CustomerName"].ToString();
+                m.Mobileno = ds.Tables[0].Rows[0]["Mobileno"].ToString();
+                m.Emailid = ds.Tables[0].Rows[0]["MailId"].ToString();
+                m.Packagetype = Convert.ToInt32(ds.Tables[0].Rows[0]["PackageType"]);
+                m.startdate = ds.Tables[0].Rows[0]["StartDate"].ToString();
+                m.Adult = Convert.ToInt32(ds.Tables[0].Rows[0]["Adult"]);
+                m.childwithbed = Convert.ToInt32(ds.Tables[0].Rows[0]["ChildWithBed"]);
+                m.childwithoutbed = Convert.ToInt32(ds.Tables[0].Rows[0]["ChildWithoutBed"]);
+                // m.TourCostPerPax = Convert.ToInt32(ds.Tables[0].Rows[0]["TourCostPerPax"]);
+                m.Flight = Convert.ToDecimal(ds.Tables[0].Rows[0]["FlightCost"].ToString());
+                m.Hotel = Convert.ToDecimal(ds.Tables[0].Rows[0]["HotelCost"]);
+                m.Tours = Convert.ToDecimal(ds.Tables[0].Rows[0]["TourCost"]);
+                m.Visa = Convert.ToDecimal(ds.Tables[0].Rows[0]["VisaCost"]);
+                m.HTT = Convert.ToDecimal(ds.Tables[0].Rows[0]["HTTCost"]);
+                m.TotalAmount = Convert.ToDecimal(ds.Tables[0].Rows[0]["TotalAmount"]);
+                m.MarkupFlightCost = Convert.ToDecimal(ds.Tables[0].Rows[0]["MarkupFlightCost"]);
+                m.MarkupHotelCost = Convert.ToDecimal(ds.Tables[0].Rows[0]["MarkupHotelCost"]);
+                m.MarkupTourCost = Convert.ToDecimal(ds.Tables[0].Rows[0]["MarkupTourCost"]);
+                m.MarkupVisaCost = Convert.ToDecimal(ds.Tables[0].Rows[0]["MarkupVisaCost"]);
+                m.MarkupHTTCost = Convert.ToDecimal(ds.Tables[0].Rows[0]["MarkupHTTCost"]);
+                m.MarkupTotalAmount = Convert.ToDecimal(ds.Tables[0].Rows[0]["MarkupTotalAmount"]);
+                m.SelFlightCost = Convert.ToDecimal(ds.Tables[0].Rows[0]["SelFlightCost"]);
+                m.SelHotelCost = Convert.ToDecimal(ds.Tables[0].Rows[0]["SelHotelCost"]);
+                m.SelTourCost = Convert.ToDecimal(ds.Tables[0].Rows[0]["SelTourCost"]);
+                m.SelVisaCost = Convert.ToDecimal(ds.Tables[0].Rows[0]["SelVisaCost"]);
+                m.SelHTTCost = Convert.ToDecimal(ds.Tables[0].Rows[0]["SelHTTCost"]);
+                m.SelTotalAmount = Convert.ToDecimal(ds.Tables[0].Rows[0]["SelTotalAmount"]);
+
+
+
+                //m.lstofflineBookingviewModelplus = (from DataRow row in ds.Tables[1].AsEnumerable()
+                //                                    select new offlineBookingviewModelplus()
+                //                                    {
+                //                                        suppliername = ds.Tables[1].Rows[0]["SupplierName"].ToString(),
+                //                                        PackageCategory = ds.Tables[1].Rows[0]["PackageCategory"].ToString(),
+                //                                        description = ds.Tables[1].Rows[0]["Description"].ToString(),
+                //                                        currency = ds.Tables[1].Rows[0]["Currency"].ToString(),
+                //                                        ROE = Convert.ToDecimal(ds.Tables[1].Rows[0]["ROE"]),
+                //                                        Amount = Convert.ToDecimal(ds.Tables[1].Rows[0]["Amount"]),
+                //                                        paymentSchedule = ds.Tables[1].Rows[0]["PaymentScheduleOption"].ToString()
+                //                                    }).ToList();
+
+
+                m.lstofflineBookingviewModelplus = ds.Tables[1].AsEnumerable().Select(x => new offlineBookingviewModelplus()
+                {
+                    suppliername = x.Field<string>("SupplierName"),
+                    PackageCategory = x.Field<string>("PackageCategory"),
+                    description = x.Field<string>("Description"),
+                    currency = x.Field<string>("Currency"),
+                    ROE = x.Field<decimal>("ROE"),
+                    Amount = x.Field<decimal>("Amount"),
+                    // paymentSchedule = x.Field<string>("PaymentScheduleOption"),
+                }).ToList();
+
+
+                //m.suppliername=ds.Tables[1].Rows[0]["SupplierName"].ToString();
+
+
+
+                //m.description = ds.Tables[1].Rows[0]["Description"].ToString();
+                //m.currency = ds.Tables[1].Rows[0]["Currency"].ToString();
+                //m.PackageCategory = ds.Tables[1].Rows[0]["PackageCategory"].ToString();
+                //m.ROE = Convert.ToDecimal(ds.Tables[1].Rows[0]["ROE"]);
+                //m.Amount = ds.Tables[1].Rows[0]["Amount"].ToString();
+                //m.paymentSchedule = ds.Tables[1].Rows[0]["PaymentScheduleOption"].ToString();
+
+
+                // m.lstofflineBookingviewModel = ds.Tables[1].Rows[0]["SupplierName"].ToString();
+                //m.Selected = m.PackageCategory.ToString().Split('#');
+
+                // m.Selected = m.PackageCategory.ToString().Split('#');
+                //  m.s = new List<string>();
+
+                //try
+                //{
+                //    string[] cityInfo = ds.Tables[1].Rows[0]["PackageCategory"].ToString().Split('#');
+                //    for (var i = 0; i < cityInfo.Length; i++)
+                //    {
+                //        if (cityInfo[i] != "")
+                //        {
+                //            m.Selected.add(cityInfo[i]);
+                //        }
+                //    }
+                //}
+                //catch { }
+
+            }
+            catch (Exception ex)
+            {
+                ErrorLog.Write(ex.Message, "HomeController", "Index");
+            }
+
+            return View(m);
+
+            // TempData["AlertMessage"] = "Successfully Inserted";
+        }
+
+
+        [HttpPost]
+        public ActionResult UpdateBooking(offlineBookingviewModel obj)
+        {
+            string strInfo = "";
+            string ite = "";
+            offlineBookingviewModel m = new offlineBookingviewModel();
+
+            m.SupplierInfo = string.Join("|", obj.lstofflineBookingviewModelplus.Select(x => x.suppliername + "~" + string.Join("#", x.Selected.Select(x1 => x1).ToList()) + "~" + x.description + "~" + x.currency + "~" + x.ROE + "~" + x.Amount)) + "|";
+            try
+            {
+                string strError = "";
+
+
+                ErrorLog.Write("Before DBInsert UpdateBooking");
+
+                m.Name = obj.Name;
+                m.BookingId = obj.BookingId;
+                m.Emailid = obj.Emailid;
+                m.Mobileno = obj.Mobileno;
+                m.Packagetype = obj.Packagetype;
+                m.Adult = obj.Adult;
+                m.childwithbed = obj.childwithbed;
+                m.childwithoutbed = obj.childwithoutbed;
+                // m.TourCostPerPax = obj.TourCostPerPax;
+                m.Flight = obj.Flight;
+                m.Hotel = obj.Hotel;
+                m.Tours = obj.Tours;
+                m.Visa = obj.Visa;
+                m.HTT = obj.HTT;
+                //m.TotalAmount = obj.Totalcost;
+                m.UserId = 1;
+                m.startdate = obj.startdate;
+                m.TotalAmount = obj.TotalAmount;
+                m.MarkupFlightCost = obj.MarkupFlightCost;
+                m.MarkupHotelCost = obj.MarkupHotelCost;
+                m.MarkupTourCost = obj.MarkupTourCost;
+                m.MarkupVisaCost = obj.MarkupVisaCost;
+                m.MarkupHTTCost = obj.MarkupHTTCost;
+                m.MarkupTotalAmount = obj.MarkupTotalAmount;
+                m.SelFlightCost = obj.SelFlightCost;
+                m.SelHotelCost = obj.SelHotelCost;
+                m.SelTourCost = obj.SelTourCost;
+                m.SelVisaCost = obj.SelVisaCost;
+                m.SelHTTCost = obj.SelHTTCost;
+                m.SelTotalAmount = obj.SelTotalAmount;
+
+
+                strInfo = "'" + m.BookingId + "','" + m.Name + "','" + m.Emailid + "'" + "," + m.Mobileno + "," + m.Packagetype + "," +
+                   "'" + m.startdate + "'" + "," + m.Adult + "," + m.childwithbed + "," + m.childwithoutbed + "," + m.Flight + "," + m.Hotel + "," +
+                   m.Tours + "," + m.Visa + "," + m.HTT + "," + m.TotalAmount + "," + m.MarkupFlightCost + "," + m.MarkupHotelCost + "," + m.MarkupTourCost + "," + m.MarkupVisaCost + "," +
+                   m.MarkupHTTCost + "," + m.MarkupTotalAmount + "," + m.SelFlightCost + "," + m.SelHotelCost + "," + m.SelTourCost + "," + m.SelVisaCost + "," + m.SelHTTCost + "," + m.SelTotalAmount + ","
+                   + m.UserId + "," + "'" + m.SupplierInfo + "'";
+                DataSet ds = DLayer.Qry_WithDataset("ADM_INS_OfflineBookingDetails " + strInfo, ref strError);
+                ErrorLog.Write("After DBInsert UpdateBooking " + strInfo);
+                ModelState.Clear();
+                ds.Dispose();
+            }
+
+            catch (Exception ex)
+            {
+                ErrorLog.Write(ex.Message + "," + strInfo, "BookingController", "UpdateBooking");
+            }
+
+            TempData["AlertMessage"] = "Successfully Inserted";
+            return RedirectToAction("Offlinebooking", "Booking");
+        }
+
+
+       
+    }
