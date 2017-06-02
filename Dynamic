@@ -1,0 +1,98 @@
+@model EaseTours.offlineBookingviewModel
+
+@foreach (var ite in Model.lstofflineBookingviewModelplus.Select((x, i) => new { value = x, index = i }))
+{
+    <div class="col-md-12">
+        <div class="form-group" id="testdynamicbooking">
+            <label class="control-label col-md-4 col-sm-4 col-xs-12">Supplier Name</label>
+            <div class="input-group col-md-6">
+                @*@Html.HiddenFor(m => m.BookingId,new { @class = "form-control ddlhideCompletetext")})*@
+                @Html.TextBoxFor(m => m.lstofflineBookingviewModelplus[ite.index].suppliername, new { @class = "Multiselectautotxtbox form-control ddlCompletetext", placeholder = "Enter the Supplier Name", onkeydown = "return (event.keyCode!=13);" })
+                @Html.ValidationMessageFor(m => m.lstofflineBookingviewModelplus[ite.index].suppliername, string.Empty, new { @style = "color:red;" })
+                @*@Value = Model.lstofflineBookingviewModelplus.[ite.index].suppliername*@
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4 col-sm-4 col-xs-12">Service Category<span class="required" style="color:red">*</span></label>
+            <div class="input-group">
+                @*@Html.DropDownListFor(m => m.PackageCategory, ViewBag.PackageCategoryList as SelectList, "--Select--")*@
+                @Html.ListBoxFor(m => m.lstofflineBookingviewModelplus[ite.index].Selected, EaseTours.Common.SelectedItems.GetCheckPackageType(ite.value.PackageCategory), new { @class = "multiselect form-control ddlpackage", multiple = "multiple", placeholder = "Select Package Category", onkeydown = "return (event.keyCode!=13);" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-4 col-sm-4 col-xs-12">Service Description<span class="required" style="color:red">*</span></label>
+            <div class="input-group col-md-6">
+                @Html.TextBoxFor(m => m.lstofflineBookingviewModelplus[ite.index].description, new { @class = "form-control", placeholder = "Enter the description", onkeydown = "return (event.keyCode!=13);" })
+                @Html.ValidationMessageFor(m => m.lstofflineBookingviewModelplus[ite.index].description, string.Empty, new { @style = "color:red;" })
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4 col-sm-4 col-xs-12">Currency<span class="required" style="color:red">*</span></label>
+            <div class="input-group col-md-6">
+                <span class="block input-icon input-icon-right">
+
+                    @*@Html.DropDownListFor(m => m.lstofflineBookingviewModelplus[ite.index].currency, EaseTours.Common.SelectedItems.GetStaicCurrencyvalue(), new { @class = "form-control myinput", placeholder = "Select Package Type" })*@
+                    @Html.TextBoxFor(m => m.lstofflineBookingviewModelplus[ite.index].currency, new { @class = "form-control ddlcurrencyCompletetext", placeholder = "Enter the currency", onkeydown = "return (event.keyCode!=13);" })
+                    @Html.ValidationMessageFor(m => m.lstofflineBookingviewModelplus[ite.index].currency, string.Empty, new { @style = "color:red;" })
+                </span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4 col-sm-4 col-xs-12">ROE<span class="required" style="color:red">*</span></label>
+            <div class="input-group col-md-6">
+                <span class="block input-icon input-icon-right">
+                    @Html.TextBoxFor(m => m.lstofflineBookingviewModelplus[ite.index].ROE, new { @class = "form-control", placeholder = "Enter the ROE", onkeydown = "return (event.keyCode!=13);" })
+                    @Html.ValidationMessageFor(m => m.lstofflineBookingviewModelplus[ite.index].ROE, string.Empty, new { @style = "color:red;" })
+                </span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4 col-sm-4 col-xs-12">Amount<span class="required" style="color:red">*</span></label>
+            <div class="input-group col-md-6">
+                <span class="block input-icon input-icon-right">
+                    @Html.TextBoxFor(m => m.lstofflineBookingviewModelplus[ite.index].Amount, new { @class = "form-control", placeholder = "Enter the Amount", onkeydown = "return (event.keyCode!=13);" })
+                    @Html.ValidationMessageFor(m => m.lstofflineBookingviewModelplus[ite.index].Amount, string.Empty, new { @style = "color:red;" })
+                </span>
+            </div>
+        </div>
+        @*<div class="form-group">
+            <label class="control-label col-md-4 col-sm-4 col-xs-12">Payment schedule option<span class="required" style="color:red">*</span></label>
+            <div class="input-group col-md-6">
+                <span class="block input-icon input-icon-right">
+                    @Html.TextBoxFor(m => m.lstofflineBookingviewModelplus[ite.index].paymentSchedule, new { @class = "form-control", placeholder = "Enter the paymentSchedule", onkeydown = "return (event.keyCode!=13);" })
+
+                    @Html.ValidationMessageFor(m => m.lstofflineBookingviewModelplus[ite.index].paymentSchedule, string.Empty, new { @style = "color:red;" })
+                </span>
+            </div>
+        </div>*@
+    </div>
+
+    <div class="clearfix">
+    </div>
+    <hr />
+    <div class="clearfix">
+    </div>
+    <div class="form-group">
+        <label for="Remark" class="col-sm-12 control-label">
+            &nbsp;
+            @if (Model.lstofflineBookingviewModelplus.Count == ite.index + 1)
+            {
+                <i class="fa fa-plus-circle" id="AddMoreHoPhone" style="cursor: pointer; font-size: 22px;
+                color: #008000;"></i>
+                @Html.Raw("&nbsp;")
+                if (ite.index != 0)
+                {
+                    <i class="fa fa-minus-circle" style="cursor: pointer; font-size: 22px; color: #FF0000"
+                       id="RemoveHoPhone"></i>
+                }
+            }
+        </label>
+
+    </div>
+    <div class="clearfix">
+    </div>
+   
+
+}
+
